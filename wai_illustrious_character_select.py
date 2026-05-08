@@ -72,7 +72,7 @@ def decode_response(response):
         print(f"[{cat}]:Error: Request failed with status code {response.status_code}")
         return []
 
-def llm_send_request(input_prompt, url, model, api_key, system_prompt=prime_directive):
+def llm_send_request(input_prompt, url, model, api_key, system_prompt=prime_directive,timeout:int = 30):
     data = {
             'model': model,
             'messages': [
@@ -80,7 +80,7 @@ def llm_send_request(input_prompt, url, model, api_key, system_prompt=prime_dire
                 {"role": "user", "content": input_prompt + ";Response in English"}
             ],  
         }
-    response = requests.post(url, headers={"Content-Type": "application/json", "Authorization": "Bearer " + api_key}, json=data, timeout=30)
+    response = requests.post(url, headers={"Content-Type": "application/json", "Authorization": "Bearer " + api_key}, json=data, timeout=timeout)
     return decode_response(response)
 
 class llm_prompt_gen_node:
@@ -130,6 +130,12 @@ class llm_prompt_gen_node:
                     "max": 0xffffffffffffffff,
                     "display": "input"
                 }),
+                "timeout": ("INT",{
+                    "default": 30,
+                    "min": 0,
+                    "max": 0xffffffffffffffff,
+                    "display": "input"
+                })
             }
         }
         
@@ -138,11 +144,11 @@ class llm_prompt_gen_node:
     FUNCTION = "llm_prompt_node_ex"
     CATEGORY = cat
     
-    def llm_prompt_node_ex(self, url, model, prompt, random_action_seed, optional_system_prompt=''):
+    def llm_prompt_node_ex(self, url, model, prompt, random_action_seed, optional_system_prompt='',timeout: int = 30):
         _ = random_action_seed
         if '' == optional_system_prompt:
             optional_system_prompt = prime_directive
-        return (llm_send_request(prompt, url, model, llm_config["api_key"], system_prompt=optional_system_prompt),)
+        return (llm_send_request(prompt, url, model, llm_config["api_key"], system_prompt=optional_system_prompt,timeout=timeout),)
 
 def llm_send_local_request(input_prompt, server, temperature=0.5, n_predict=512, system_prompt=prime_directive):
     data = {
