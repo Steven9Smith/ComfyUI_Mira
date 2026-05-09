@@ -227,6 +227,12 @@ class local_llm_prompt_gen:
                     "max": 0xffffffffffffffff,
                     "display": "input"
                 }),
+                "timeout": ("INT",{
+                    "default": 30,
+                    "min": 0,
+                    "max": 0xffffffffffffffff,
+                    "display": "input"
+                })
             }
         }
         
@@ -235,11 +241,11 @@ class local_llm_prompt_gen:
     FUNCTION = "local_llm_prompt_gen_ex"
     CATEGORY = cat
     
-    def local_llm_prompt_gen_ex(self, server, temperature, n_predict, prompt, random_action_seed, optional_system_prompt=''):
+    def local_llm_prompt_gen_ex(self, server, temperature, n_predict, prompt, random_action_seed, optional_system_prompt='',timeout: int=30):
         _ = random_action_seed
         if '' == optional_system_prompt:
             optional_system_prompt = prime_directive
-        return (llm_send_local_request(prompt, server, temperature=temperature, n_predict=n_predict, system_prompt=optional_system_prompt),)     
+        return (llm_send_local_request(prompt, server, temperature=temperature, n_predict=n_predict, system_prompt=optional_system_prompt,timeout=timeout),)     
     
 class illustrious_character_select:
     '''
