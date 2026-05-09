@@ -150,7 +150,7 @@ class llm_prompt_gen_node:
             optional_system_prompt = prime_directive
         return (llm_send_request(prompt, url, model, llm_config["api_key"], system_prompt=optional_system_prompt,timeout=timeout),)
 
-def llm_send_local_request(input_prompt, server, temperature=0.5, n_predict=512, system_prompt=prime_directive):
+def llm_send_local_request(input_prompt, server, temperature=0.5, n_predict=512, system_prompt=prime_directive,timeout:int = 30):
     data = {
             "temperature": temperature,
             "n_predict": n_predict,
@@ -161,7 +161,7 @@ def llm_send_local_request(input_prompt, server, temperature=0.5, n_predict=512,
                 {"role": "user", "content": input_prompt + ";Response in English"}
             ],  
         }
-    response = requests.post(server, headers={"Content-Type": "application/json"}, json=data)
+    response = requests.post(server, headers={"Content-Type": "application/json"}, json=data,timeout=timeout)
 
     return decode_response(response)
 
