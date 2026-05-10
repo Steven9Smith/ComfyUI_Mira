@@ -49,7 +49,7 @@ prime_directive = textwrap.dedent("""\
     6.User input: Incorporate the exact keywords from the user's query into the prompt where appropriate.
     7.Emphasis handling: If the user emphasizes a particular aspect, you may increase the number of keywords in that category (up to 6), but ensure the total number of keywords remains between 8 and 16.
     8.Character description: You may describe actions and expressions but must not mention specific character traits (such as gender or age). Words that imply a character (e.g., "warrior") are allowed as long as they do not violate the prohibited keywords.
-    9.Output: Provide the answer as a single line of comma-separated keywords.
+    9.Output: Provide the answer as a single line of comma-separated keywords ONLY.
     Prompt for the following theme:
     """)
 
@@ -69,8 +69,8 @@ def decode_response(response):
             ai_text = f'{ai_text},'            
         return ai_text    
     else:
-        print(f"[{cat}]:Error: Request failed with status code {response.status_code}")
-        return []
+        print(f"[{cat}] Error: Request failed with status code {response.status_code}")
+        return ""
 
 def llm_send_request(input_prompt, url, model, api_key, system_prompt=prime_directive,timeout:int = 30):
     data = {
@@ -80,7 +80,11 @@ def llm_send_request(input_prompt, url, model, api_key, system_prompt=prime_dire
                 {"role": "user", "content": input_prompt + ";Response in English"}
             ],  
         }
-    response = requests.post(url, headers={"Content-Type": "application/json", "Authorization": "Bearer " + api_key}, json=data, timeout=timeout)
+    try:
+        response = requests.post(url, headers={"Content-Type": "application/json", "Authorization": "Bearer " + api_key}, json=data, timeout=timeout)
+    except requests.exceptions.RequestException as e:
+        print(f"[{cat}] Error: Request failed with exception {e}")
+        return ""
     return decode_response(response)
 
 class llm_prompt_gen_node:
@@ -132,8 +136,8 @@ class llm_prompt_gen_node:
                 }),
                 "timeout": ("INT",{
                     "default": 30,
-                    "min": 0,
-                    "max": 0xffffffffffffffff,
+                    "min": 1,
+                    "max": 300,
                     "display": "input"
                 })
             }
@@ -161,7 +165,11 @@ def llm_send_local_request(input_prompt, server, temperature=0.5, n_predict=512,
                 {"role": "user", "content": input_prompt + ";Response in English"}
             ],  
         }
-    response = requests.post(server, headers={"Content-Type": "application/json"}, json=data,timeout=timeout)
+    try:
+        response = requests.post(server, headers={"Content-Type": "application/json"}, json=data,timeout=timeout)
+    except requests.exceptions.RequestException as e:
+        print(f"[{cat}] Error: Request failed with exception {e}")
+        return ""
 
     return decode_response(response)
 
@@ -229,8 +237,8 @@ class local_llm_prompt_gen:
                 }),
                 "timeout": ("INT",{
                     "default": 30,
-                    "min": 0,
-                    "max": 0xffffffffffffffff,
+                    "min": 1,
+                    "max": 300,
                     "display": "input"
                 })
             }
